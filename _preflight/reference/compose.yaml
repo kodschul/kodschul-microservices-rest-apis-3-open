@@ -1,0 +1,45 @@
+name: kodschul-microservices-reference
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.3.5-management
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-course}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-course}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  notification-service:
+    build: ./notification-service
+    environment:
+      RABBITMQ_ENABLED: "true"
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-course}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-course}
+    ports:
+      - "${NOTIFICATION_PORT:-8000}:8000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  order-service:
+    build: ./order-service
+    environment:
+      NOTIFICATION_BASE_URL: http://notification-service:8000
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-course}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-course}
+    ports:
+      - "${ORDER_PORT:-8080}:8080"
+    depends_on:
+      notification-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
