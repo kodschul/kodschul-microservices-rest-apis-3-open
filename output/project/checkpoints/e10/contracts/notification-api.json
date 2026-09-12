@@ -1,0 +1,68 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Notification Service",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "responses": {
+          "200": {"description": "Service is ready"}
+        }
+      }
+    },
+    "/notifications": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {"$ref": "#/components/schemas/NotificationRequest"}
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Notification accepted",
+            "content": {
+              "application/json": {
+                "schema": {"$ref": "#/components/schemas/NotificationResponse"}
+              }
+            }
+          },
+          "422": {"description": "Request validation failed"}
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "responses": {
+          "200": {"description": "Consumed order events"}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "NotificationRequest": {
+        "type": "object",
+        "required": ["order_id", "recipient"],
+        "properties": {
+          "order_id": {"type": "string", "minLength": 1, "maxLength": 40},
+          "recipient": {"type": "string", "minLength": 3, "maxLength": 120},
+          "channel": {"type": "string", "enum": ["email", "sms"], "default": "email"}
+        }
+      },
+      "NotificationResponse": {
+        "type": "object",
+        "required": ["order_id", "status", "channel"],
+        "properties": {
+          "order_id": {"type": "string"},
+          "status": {"type": "string", "const": "accepted"},
+          "channel": {"type": "string", "enum": ["email", "sms"]}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,101 @@
+openapi: 3.1.0
+info:
+  title: Order Service API
+  version: 1.0.0
+  description: Erstellt Bestellungen, meldet Fehler und veroeffentlicht Versandereignisse.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/orders:
+    post:
+      summary: Bestellung erstellen
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderRequest"
+      responses:
+        "201":
+          description: Bestellung wurde erstellt und die Benachrichtigung angenommen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Die Bestelldaten sind ungueltig.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
+          description: Ein benoetigter nachgelagerter Service ist nicht verfuegbar.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/orders/{orderId}/dispatch:
+    post:
+      summary: Versandereignis veroeffentlichen
+      operationId: dispatchOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Das Versandereignis wurde zur Verarbeitung angenommen.
+        "502":
+          description: RabbitMQ ist nicht verfuegbar.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    OrderRequest:
+      type: object
+      additionalProperties: false
+      required: [sku, quantity, recipient]
+      properties:
+        sku:
+          type: string
+          minLength: 1
+          pattern: ".*\\S.*"
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        recipient:
+          type: string
+          minLength: 1
+          pattern: ".*\\S.*"
+          format: email
+    OrderResponse:
+      type: object
+      additionalProperties: false
+      required: [orderId, status, notificationStatus]
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          const: created
+        notificationStatus:
+          type: string
+          const: accepted
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [INVALID_ORDER, DOWNSTREAM_UNAVAILABLE]
+        message:
+          type: string

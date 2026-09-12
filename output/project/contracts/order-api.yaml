@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: Order Service
+  version: 0.1.0
+  description: TODO - Zweck und fachliche Grenze der Order API beschreiben.
+paths:
+  /api/orders:
+    post:
+      summary: TODO - Operation aus fachlicher Sicht benennen.
+      description: TODO - Vorbedingungen und erwartbares Verhalten beschreiben.
+      operationId: createOrder
+      requestBody:
+        required: true
+        description: TODO - Bedeutung der Anfrage beschreiben.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderRequest"
+      responses:
+        default:
+          description: TODO - konkrete Erfolgs-, Grenz- und Fehlerantworten ergänzen.
+components:
+  schemas:
+    OrderRequest:
+      type: object
+      description: TODO - Anfragefelder, Pflichtangaben und Regeln modellieren.
+      properties: {}
+    OrderResponse:
+      type: object
+      description: TODO - Antwortfelder für den Erfolgsfall modellieren.
+      properties: {}
+    ErrorResponse:
+      type: object
+      description: TODO - eine konsistente Fehlerrepräsentation modellieren.
+      properties: {}

@@ -1,0 +1,4 @@
+services:
+  order-service:
+    environment:
+      NOTIFICATION_BASE_URL: http://notification-service-unavailable:8000

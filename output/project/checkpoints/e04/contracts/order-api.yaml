@@ -1,0 +1,88 @@
+openapi: 3.1.0
+info:
+  title: Order Service API
+  version: 1.0.0
+  description: Erstellt Bestellungen und meldet Validierungsfehler konsistent.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/orders:
+    post:
+      summary: Bestellung erstellen
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderRequest"
+      responses:
+        "201":
+          description: Bestellung wurde erstellt.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        "400":
+          description: Die Bestelldaten sind ungueltig.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    OrderRequest:
+      type: object
+      required:
+        - sku
+        - quantity
+        - recipient
+      properties:
+        sku:
+          type: string
+          minLength: 1
+          pattern: ".*\\S.*"
+        quantity:
+          type: integer
+          format: int32
+          minimum: 1
+          maximum: 100
+        recipient:
+          type: string
+          minLength: 1
+          pattern: ".*\\S.*"
+          format: email
+    OrderResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - orderId
+        - status
+        - notificationStatus
+      properties:
+        orderId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - created
+        notificationStatus:
+          type: string
+          enum:
+            - pending
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - INVALID_ORDER
+        message:
+          type: string
+          enum:
+            - Order data is invalid
