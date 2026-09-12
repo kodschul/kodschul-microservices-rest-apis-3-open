@@ -1,199 +1,142 @@
 ---
 theme: default
-title: Microservices & REST API für Entwickler
+title: Microservices und REST API für Entwickler
 info: |
-  Dreitägiger Praxiskurs mit Java, FastAPI, RabbitMQ und Docker Compose.
+  Dreitägiger Praxiskurs: Bestell-Plattform mit Java/Spring Boot oder Python/FastAPI, RabbitMQ und Docker Compose.
 drawings:
   persist: false
 transition: slide-left
 mdc: true
 ---
 
-# Microservices & REST API für Entwickler
+# Microservices und REST API für Entwickler
 
-## Von einem laufenden Java-Service zur belastbaren Service-Landschaft
+## Von Servicegrenzen zur containerisierten Bestell-Plattform
 
-**Drei Tage · 09:00–16:30 · individuelle Labs**
+**Drei Tage · 09:00-16:30 · Java- oder Python-Spur**
 
 ---
 # Das Kursergebnis
 
-Nach drei Tagen können die Teilnehmenden:
+Nach drei Tagen könnt ihr in eurer gewählten Sprache (Java/Spring Boot oder Python/FastAPI):
 
-- einen vorhandenen Java-Service bauen, starten, testen und verändern,
-- Servicegrenzen anhand fachlicher und betrieblicher Kriterien begründen,
-- REST APIs und Fehlerfälle konsistent entwerfen,
-- OpenAPI als überprüfbaren Vertrag einsetzen,
-- Java und Python synchron integrieren,
-- REST und Messaging bewusst auswählen,
-- Java, FastAPI und RabbitMQ mit Docker Compose betreiben,
-- verteilte Fehler diagnostizieren und nächste Produktionsschritte priorisieren.
+- eine Microservices-Architektur begründet von einem Monolithen abgrenzen und Servicegrenzen benennen,
+- eine RESTful API mit OpenAPI/Swagger vertraglich beschreiben und implementieren,
+- Skalierungsentscheidungen (horizontal/vertikal, Cloud) begründen,
+- asynchrone Kommunikation mit RabbitMQ umsetzen und gegen REST abwägen,
+- einen Service containerisieren und die Plattform mit Docker Compose orchestrieren,
+- Testarten, Resilienzmuster, Monitoring/Logging und eine Deployment-Strategie bewerten.
 
-Das sichtbare Ergebnis ist eine lokal ausführbare Referenzarchitektur mit überprüfbaren Schnittstellen und dokumentierten Entscheidungen.
+Das sichtbare Ergebnis: eine lokal lauffähige, containerisierte Bestell-Plattform mit dokumentierter REST- und Ereigniskommunikation, nachgewiesener Resilienz und einer begründeten Deployment-Entscheidung.
 
 ---
 # Vorstellungsrunde
 
-Bitte stellen Sie sich kurz vor:
+Bitte teilt kurz:
 
 - Name und aktuelle Rolle
 - beruflicher Hintergrund und heutige Aufgaben
 - Weg in das aktuelle Arbeitsfeld
-- Unternehmen oder Organisation und Dauer der Zugehörigkeit
-- Stadt oder Region; lokales Wetter als freiwilliger Einstieg
-- bisherige Erfahrung mit Microservices und REST APIs
+- Unternehmen/Organisation und Zugehörigkeitsdauer
+- Stadt/Region; lokales Wetter als freiwilliger Einstieg
+- bisherige Erfahrung mit Microservices, REST APIs oder Messaging
 - Erwartungen an das Seminar
-- Projekt, Use Case oder Arbeitsaufgabe für den Transfer
+- ein Projekt, ein Use Case oder eine Arbeitsaufgabe für den Transfer
 
-Persönliche Angaben sind freiwillig. Jeder Punkt darf übersprungen werden.
+Persönliche Angaben sind freiwillig - jeder Punkt darf übersprungen werden.
 
 ---
-# Unser Szenario
+# Zielgruppe und Voraussetzungen
 
-Eine Bestell- und Lieferplattform wächst aus einer eng gekoppelten Anwendung zu einer kleinen Service-Landschaft.
+- Softwareentwickler:innen, Foundation- bis Intermediate-Niveau im Bereich Microservices.
+- Programmiergrundkenntnisse und Vertrautheit mit Webservice-/API-Konzepten (z. B. REST, SOAP) werden vorausgesetzt.
+- Praktische Vorerfahrung in mindestens einer der beiden Kurssprachen (Java oder Python) - tiefe Erfahrung in beiden ist nicht nötig.
+- Docker lokal lauffähig, Zugriff auf öffentliche Paket-Repositories (Maven Central, PyPI); Preflight-Check vor Kursbeginn empfohlen.
+
+---
+# Unser Szenario: die Bestell-Plattform
 
 ```mermaid
 flowchart LR
-    Client[API Client] -->|REST / JSON| Order[Order Service<br/>Java + Spring Boot]
-    Order -->|REST / JSON| Notify[Notification Service<br/>Python + FastAPI]
-    Order -->|OrderDispatched| Broker[(RabbitMQ)]
-    Broker --> Notify
+    Client[REST-Client] -->|REST / JSON| Order[Order-Service]
+    Order -->|order.created| MQ[(RabbitMQ)]
+    MQ --> Notify[Notification-Service]
 ```
 
-- **Order Service:** nimmt Bestellungen an und steuert den Ablauf.
-- **Notification Service:** verarbeitet Benachrichtigungen und Ereignisse.
-- **RabbitMQ:** entkoppelt den späteren Ereignisfluss.
-- **Docker Compose:** startet und verbindet die Landschaft reproduzierbar.
+- **Order-Service:** nimmt Bestellungen entgegen, validiert sie und veröffentlicht ein Ereignis.
+- **Notification-Service:** konsumiert das Ereignis und protokolliert eine Benachrichtigung.
+- **RabbitMQ:** entkoppelt Order- und Notification-Service zeitlich.
+- **Docker Compose:** startet und verbindet die gesamte Landschaft reproduzierbar (ab Modul 8).
+
+---
+# Zwei Sprachspuren, ein Szenario
+
+Jede/r Teilnehmende wählt zu Kursbeginn **eine** Spur (Java/Spring Boot oder Python/FastAPI) und bleibt für alle drei Tage darin. Beide Spuren implementieren dasselbe Szenario mit vergleichbarem Lernziel, Aufwand und Checkpoint-Kriterium.
+
+**Ordnerkonvention der Materialien:** Labs zu Architektur, Skalierung und Event-Driven-Konzepten (z. B. Module 1.1-1.2, 4, 5) sind sprachneutral und liegen direkt im Lab-Ordner. Implementierungsnahe Labs (z. B. Module 2, 3, 6, 7, 8, 9) liegen je einmal unter `java/` und einmal unter `python/` im selben Lab-Ordner - nutzt nur den Unterordner eurer gewählten Spur.
 
 ---
 # Der Lernpfad
 
 | Modul | Leitfrage | Sichtbares Ergebnis |
 | --- | --- | --- |
-| M01 Code zuerst | Läuft der vorhandene Service reproduzierbar? | API-Aufruf, grüner Test, erste Änderung |
-| M02 Servicegrenzen | Welche Trennung ist fachlich vertretbar? | Context Map und Entscheidung |
-| M03 REST und OpenAPI | Wie wird die Grenze zu einem Vertrag? | validierter API-Vertrag |
-| M04 Java und Python | Bleibt die Kommunikation sprachunabhängig? | erfolgreicher Vertical Slice |
-| M05 REST oder Ereignis | Welche Kopplung passt zur Interaktion? | RabbitMQ-Fluss und Trade-off |
-| M06 Docker Compose | Wie läuft die Landschaft reproduzierbar? | gesunde Service-Landschaft |
-| M07 Tests und Resilienz | Welcher Test deckt welches Risiko? | Diagnose und getestete Kontrolle |
-| M08 Produktionsreife | Was fehlt für einen verantwortbaren Betrieb? | priorisierter Verbesserungsplan |
+| M1 Grundlagen und Architektur | Wodurch unterscheidet sich ein Microservice-System von einem Monolithen? | Servicegrenzen, lauffähiges Starterprojekt |
+| M2 REST-API-Design und Implementierung | Wie wird eine REST-Schnittstelle konsistent gestaltet? | Validierte REST-API für den Order-Service |
+| M3 API-Dokumentation mit OpenAPI/Swagger | Wie wird die API nachvollziehbar dokumentiert? | Swagger UI, generierter Client |
+| M4 Skalierung und Lastverteilung | Wann skaliert man horizontal, wann vertikal? | Begründete Skalierungsentscheidung |
+| M5 Event-Driven Architecture | Wann lohnt sich Ereigniskommunikation? | Entworfener Ereignisvertrag |
+| M6 Messaging mit RabbitMQ | Wie werden Ereignisse zuverlässig übertragen? | Order↔Notification über RabbitMQ |
+| M7 Containerisierung mit Docker | Wie wird ein Service reproduzierbar containerisiert? | Gebautes, startfähiges Image |
+| M8 Orchestrierung mit Docker Compose | Wie wird die Landschaft gemeinsam orchestriert? | Plattform startet über `docker compose up` |
+| M9 Tests, Resilienz, Deployment | Welche Testarten, Resilienzmuster, Deployment-Strategie passen? | Resilienznachweis, Abschlussdemonstration |
 
 ---
-# Tag 1: Code und Verträge
+# Tag 1: Grundlagen und REST-API
 
-**Ziel:** Der Java-Service läuft und kommuniziert noch am selben Tag mit FastAPI.
+**Ziel:** begründete Servicegrenzen und eine validierte, dokumentierte REST-API für den Order-Service.
 
-1. Starterprojekt bauen, starten und testen
-2. Kopplung untersuchen und Servicegrenzen begründen
-3. REST-Ressourcen, Statuscodes und Fehlerfälle entwerfen
-4. OpenAPI-Vertrag prüfen
-5. Java-Endpunkt und vorbereiteten Python-Service verbinden
+1. Microservices von Monolithen begründet abgrenzen (M1)
+2. Servicegrenzen entwerfen, Startercode lauffähig einrichten (M1)
+3. REST-Vertrag entwerfen und implementieren, validieren und testen (M2)
+4. OpenAPI-Spezifikation erzeugen, Swagger UI prüfen, Client generieren (M3)
 
-**Tagescheckpoint:** Java und Python tauschen im Erfolgsfall vertragstreue Daten aus.
-
----
-# Tag 2: Integration und Betrieb
-
-**Ziel:** Der synchrone Pfad wird abgesichert und um Messaging ergänzt.
-
-1. positive und negative Vertragstests ausführen
-2. Fehlerantworten über Servicegrenzen behandeln
-3. REST und Ereignisse anhand von Kopplung vergleichen
-4. `OrderDispatched` über RabbitMQ publizieren und konsumieren
-5. Java, Python und RabbitMQ mit Docker Compose betreiben
-
-**Tagescheckpoint:** Die vollständige Landschaft startet reproduzierbar und der Ereignisfluss ist sichtbar.
+**Tagescheckpoint:** Order-Service läuft lokal und ist über Swagger UI mit generiertem Client nutzbar.
 
 ---
-# Tag 3: Diagnose und Entscheidungen
+# Tag 2: Skalierung und asynchrone Kommunikation
 
-**Ziel:** Die laufende Landschaft wird gezielt gestört, diagnostiziert und bewertet.
+**Ziel:** begründete Skalierungsentscheidung; Notification-Service reagiert sichtbar auf ein RabbitMQ-Ereignis.
 
-1. Status und Logs zur Ursachenanalyse einsetzen
-2. Unit-, Vertrags-, Integrations- und End-to-End-Tests zuordnen
-3. Timeout, Wiederholung, Duplikat oder Teilausfall untersuchen
-4. eine passende Resilienzmaßnahme prüfen
-5. Skalierung, Delivery und Produktionsreife bewerten
+1. Skalierungsarten einordnen, Load Balancing beobachten, Entscheidung dokumentieren (M4)
+2. Synchron/asynchron unterscheiden, Ereignisvertrag entwerfen, Trade-offs bewerten (M5)
+3. RabbitMQ einrichten, publizieren, konsumieren, End-to-End-Fluss inkl. Fehlerfall testen (M6)
 
-**Abschluss:** Jede Person priorisiert Risiken und nächste Schritte für die eigene Lösung.
+**Tagescheckpoint:** Order- und Notification-Service kommunizieren nachweislich asynchron über RabbitMQ.
 
 ---
-# Arbeitsweise
+# Tag 3: Container, Resilienz, Abschluss
 
-- Kurze Theorieimpulse werden unmittelbar angewendet.
-- Alle Pflichtübungen erzeugen einen überprüfbaren Checkpoint.
-- Der Basispfad ist für die gemeinsame Kursprogression verbindlich.
-- Erweiterungen vertiefen Python, Fehlerfälle oder Architekturentscheidungen.
-- Erweiterungen sind keine Voraussetzung für spätere Pflichtmodule.
-- Entscheidungen werden anhand von Kriterien begründet, nicht anhand von Technologiepräferenzen.
+**Ziel:** reproduzierbar orchestrierte Plattform, nachgewiesenes Resilienzmuster, begründete Deployment-Entscheidung.
 
-Die Referenzlösung dient der Prüfung und Wiederherstellung. Gearbeitet wird im Starterprojekt.
+1. Dockerfile lesen, eigenes Dockerfile schreiben, Image bauen und starten (M7)
+2. Compose-Datei erstellen, Stack starten, Checkpoint verifizieren (M8)
+3. Testarten zuordnen, Resilienzmuster implementieren und per Fehlerinjektion testen, Monitoring-Konzept skizzieren, Deployment-Strategie wählen und Gesamtsystem demonstrieren (M9)
 
----
-# Technische Umgebung
-
-| Komponente | Kursbasis |
-| --- | --- |
-| Java | Java 21 LTS |
-| Java-Framework | Spring Boot 4.1.1 |
-| Python | Python 3.12 |
-| Python-Framework | FastAPI 0.141.1 |
-| Messaging | RabbitMQ 4.3.5 |
-| Laufzeit | Docker Compose v2 |
-
-Benötigte lokale Ports: `8080`, `8000`, `5672` und `15672`.
-
-Der Pflichtpfad läuft lokal mit anonymisierten Beispieldaten und ohne externe Konten.
+**Abschluss:** Jede Person demonstriert die vollständige Plattform und hält in `output/project/capstone-summary.md` fest, wie alle sechs Lernziele im eigenen Projektstand sichtbar wurden.
 
 ---
-# Erster technischer Checkpoint
+# Arbeitsweise und Aufgabenformen
 
-Im ersten Lab wird der vorhandene Java-Service:
-
-1. gebaut,
-2. getestet,
-3. gestartet,
-4. über seine API aufgerufen,
-5. mit einer kleinen getesteten Änderung versehen.
-
-**Fertig bedeutet:** Der Service antwortet, der Test ist grün und die Änderung ist nachvollziehbar gesichert.
+- Jedes Lab enthält `theory.md` (Input), `exercise.md` (Aufgabe) und `solution.md` (vollständige Lösung mit Begründung).
+- **Baseline** ist für alle Teilnehmenden verpflichtend; **Erweiterung** ist optional und für schnellere Teilnehmende gedacht - nie Voraussetzung für Pflichtinhalte.
+- Aufgabentypen wechseln bewusst: kurze Einordnungsübungen, angeleitete Implementierungs-Labs, Diagnose-/Sandbox-Übungen, Diskussionen und Projekt-Labs, die die gemeinsame Plattform weiterbauen.
+- Nicht jedes Lab verändert die Bestell-Plattform - Sandbox-Übungen (z. B. M4-L2) sind ausdrücklich reversibel und ohne Dauerwirkung.
 
 ---
-# Bewusste Grenzen
+# Umgebung und Sicherheit
 
-Der Kurs ist kein vollständiger Docker-, Kubernetes- oder CI/CD-Kurs.
-
-- Docker wird für Build, Start, Konfiguration, Vernetzung, Status und Logs eingesetzt.
-- Cloud-Skalierung wird verglichen, aber nicht verpflichtend implementiert.
-- Monitoring wird als Produktionsanforderung bewertet; ein eigener Monitoring-Stack ist nicht Teil des Labs.
-- Python ist ein vorbereiteter Integrationsservice. Eigene Python-Änderungen bleiben eine Erweiterung.
-- Microservices sind eine Architekturentscheidung, kein automatisches Zielbild.
-
----
-# Checkpoints über drei Tage
-
-- Coding-Start
-- Architekturentscheidung
-- begründete Servicegrenzen
-- gültiger API-Vertrag
-- Java-Python-Interoperabilität
-- nachvollziehbarer Messaging-Fluss
-- reproduzierbare Compose-Landschaft
-- Test- und Resilienzbefund
-- individuelles Produktionsreife-Review
-
-Die Checkpoints dienen dem formativen Feedback. Sie sind keine externe Zertifizierungsprüfung.
-
----
-
-# Transferfrage
-
-Welche eine Schnittstelle oder Kopplung in Ihrem aktuellen System würden Sie nach diesem Kurs zuerst untersuchen?
-
-Notieren Sie:
-
-- den fachlichen Anlass,
-- die beteiligten Verantwortungen,
-- das aktuell größte Risiko,
-- die Evidenz, die Sie für eine Entscheidung benötigen.
+- JDK 17 + Maven (Java-Spur) bzw. aktuelle Python-Version mit venv/pip (Python-Spur); Docker und Docker Compose lokal lauffähig.
+- Alle Beispieldaten sind fiktiv; keine echten Kunden- oder Produktionsdaten, keine geheimen Zugangsdaten im Code.
+- Der lokale RabbitMQ-Zugang (`kodschul`/`kodschul`) ist ein Trainings-Platzhalter für die nicht im Internet erreichbare Kursumgebung - kein produktiv nutzbares Geheimnis.
+- Sensible oder destruktive Aktionen (z. B. Cloud-Deployment) werden nur konzeptionell besprochen, nicht praktisch mit echten Cloud-Ressourcen durchgeführt.
+- Bei Docker- oder RabbitMQ-Problemen: meldet euch frühzeitig - vorbereitete Fallbacks (Images, Aufzeichnungen) stehen bereit.

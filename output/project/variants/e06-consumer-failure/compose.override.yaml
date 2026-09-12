@@ -1,4 +1,0 @@
-services:
-  notification-service:
-    environment:
-      RABBITMQ_FAIL_ONCE: "true"

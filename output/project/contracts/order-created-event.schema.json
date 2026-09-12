@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kodschul.example/contracts/order-created-event.schema.json",
+  "title": "OrderCreatedEvent",
+  "type": "object",
+  "required": ["eventId", "eventType", "occurredAt", "order"],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "order.created"
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "order": {
+      "type": "object",
+      "required": ["orderId", "customerName", "itemName", "quantity", "status"],
+      "properties": {
+        "orderId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "itemName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["NEW", "CONFIRMED", "CANCELLED"]
+        }
+      }
+    }
+  }
+}

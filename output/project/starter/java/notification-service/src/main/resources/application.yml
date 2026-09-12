@@ -1,0 +1,17 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: notification-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: kodschul
+    password: kodschul
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

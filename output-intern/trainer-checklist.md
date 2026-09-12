@@ -1,61 +1,72 @@
 # Trainer-Checkliste
 
-## Vor dem Kurs
+Stand: vollständiger Kurs (M1-M9).
 
-- [ ] Java 21, Docker Compose v2 und Git auf dem Zielgerät prüfen.
-- [ ] Starter und Referenz frisch bereitstellen; keine lokalen Lösungen im Starter belassen.
-- [ ] Ports `8080`, `8000`, `5672` und `15672` prüfen.
-- [ ] Paket- und Image-Zugriff testen oder benötigte Artefakte vorab laden.
-- [ ] Referenz mit Start-, Smoke- und Stop-Skript vollständig ausführen.
-- [ ] Prüfen, dass nach dem Stop keine Kurscontainer verbleiben.
-- [ ] Native Tag-1-Alternative einmal ausführen.
-- [ ] API-Client oder äquivalentes Werkzeug bereitstellen.
-- [ ] Vorstellungsfolie und Zeitbox für bis zu zwölf Personen vorbereiten.
-- [ ] Keine echten Kundendaten oder produktiven Zugangsdaten verwenden.
+## Vor Kursbeginn (einmalig, alle Tage betreffend)
 
-## Tag 1
+- [ ] Preflight-Check je Teilnehmendem: Docker-Funktionsfähigkeit, freie lokale Ports (8081, 8091, 5672, 15672), Zugriff auf Maven Central und PyPI.
+- [ ] Java-/Python-Erfahrungsniveau je Teilnehmendem ist laut Trainerentscheidung bewusst nicht separat erhoben worden (siehe `03-feedback.md`, Iteration 3) - bei Bedarf informell zu Kursbeginn abfragen, um die Trackwahl zu erleichtern.
+- [ ] Videokonferenz-Tool und Screen-Sharing-Setup festgelegt.
+- [ ] Alle vier Starterprojekte (`order-service`, `notification-service`, je Java und Python) lokal getestet (Start, Health-Check).
+- [ ] `output/project/contracts/order-api.yaml`, `order-created-event.schema.json` und `messaging-contract.md` auf Konsistenz geprüft (gleiche Feldnamen, `camelCase`).
 
-- [ ] Einführung bis 09:30 abschließen und direkt ins Starterprojekt wechseln.
-- [ ] Java-Build und ersten API-Aufruf bei allen Teilnehmenden prüfen.
-- [ ] Erweiterungen nicht zur Voraussetzung für den Basispfad machen.
-- [ ] Architekturentscheidungen an Qualitätszielen prüfen lassen.
-- [ ] Vor dem Java-Python-Checkpoint den OpenAPI-Vertrag validieren.
-- [ ] Tagesabschluss: erfolgreicher sprachübergreifender Aufruf ist sichtbar.
+## Tag 1 - Setup und Fallbacks
 
-## Tag 2
+- [ ] JDK 17 und Maven 3.9+ (Java-Spur) bzw. Python 3.11+ (Python-Spur) auf Trainer-Referenzmaschine verifiziert.
+- [ ] Docker-Image für `openapitools/openapi-generator-cli` vorab gezogen (`docker pull openapitools/openapi-generator-cli`), um Wartezeiten in M3-L3 zu vermeiden.
+- [ ] Fallback für M3-L3 vorbereitet: fertig generierter `generated-client`-Ordner als Download, falls Docker bei einzelnen Teilnehmenden nicht funktioniert.
+- [ ] Bei Teilnehmenden mit nativem Docker Engine (z. B. Linux statt Docker Desktop): Hinweis geben, dass der `docker run`-Befehl in M3-L3 um `--add-host=host.docker.internal:host-gateway` ergänzt werden muss (bereits in `theory.md`/`solution.md` beider Spuren dokumentiert).
+- [ ] Swagger UI (Java: `/swagger-ui.html`, Python: `/docs`) auf Referenzmaschine geöffnet und Screenshot als Backup erstellt (M3-L2-Fallback).
 
-- [ ] Fehler- und Vertragstest vor dem Messaging-Block abschließen.
-- [ ] REST-/Messaging-Entscheidungen mit Kopplung und Konsistenz begründen lassen.
-- [ ] RabbitMQ-Ereignis und Consumer-Ergebnis sichtbar machen.
-- [ ] Docker-Tiefe auf Build, Konfiguration, Vernetzung, Status und Logs begrenzen.
-- [ ] Compose-Landschaft zum Tagesende kontrolliert stoppen.
+## Zeitpuffer und Kürzungsoptionen Tag 1
 
-## Tag 3
+Bei Zeitdruck zuerst kürzen (siehe `02-plan.md`, Timing Validation):
 
-- [ ] Gesamtlandschaft reproduzierbar neu starten.
-- [ ] Vorbereiteten Fehler nur nach gesichertem Ausgangszustand aktivieren.
-- [ ] Diagnose zuerst über Status und Logs führen, dann Änderungen zulassen.
-- [ ] Resilienzmaßnahme gegen denselben Fehlerfall erneut testen.
-- [ ] Produktionsreife-Review individuell abschließen lassen.
-- [ ] Jede Person benennt einen konkreten nächsten Transferschritt.
+1. M2-L2-Erweiterung "weitere Ressourcen" (optional, entfällt zuerst),
+2. M3-L3-Erweiterung "Dokumentation gemeinsam reviewen" (optional, entfällt als zweites),
+3. M3-L1/L2/L3 sind bereits knapp bemessen (15 Min); nicht weiter kürzen, stattdessen bei Bedarf den Rückblick zu Beginn von Tag 2 verkürzen.
 
-## Fallbacks
+## Übergänge und Tagesabschluss
 
-| Problem | Erste Prüfung | Begrenzter Fallback |
-| --- | --- | --- |
-| Java baut nicht | JDK, Maven-Ausgabe, Netzwerk | vorgebautes Referenz-JAR für Analyse; Coding-Ziel später nachholen |
-| Port belegt | Listener und `.env` prüfen | freie alternative Ports konfigurieren |
-| FastAPI startet nicht | Python-Version und Abhängigkeiten | getestetes Container-Image verwenden |
-| Docker Engine nicht erreichbar | Engine-Status und Kontext | nativer REST-Pfad nur für Tag 1 |
-| RabbitMQ nicht gesund | Compose-Status und Broker-Logs | Ereignisvertrag und Publisher-Test analysieren; E2E bleibt offen |
-| Teilnehmende sind schneller | Pflichtcheckpoint prüfen | klar markierte Erweiterung E05X oder zusätzlicher Fehlerfall |
+- Tagesabschluss Tag 1, 16:15-16:30: Ergebnis sichern lassen (Order-Service läuft, REST-API dokumentiert), offene Fragen sammeln, Ausblick auf Skalierung/Messaging (Tag 2) geben.
+- Tagesabschluss Tag 2, 16:15-16:30: Ergebnis sichern lassen (asynchrone Kommunikation funktioniert), offene Fragen sammeln, Ausblick auf Container/Compose (Tag 3) geben.
+- Kursabschluss Tag 3, 16:10-16:30: Capstone-Ergebnisse würdigen, offene Fragen sammeln, Feedback einholen, Verabschiedung.
 
-Ein beobachteter Fallback ist kein bestandener individueller Ausführungscheckpoint. Fehlende Nachweise bleiben sichtbar.
+## Tag 2 - Setup und Fallbacks
 
-## Abschlusskontrolle
+- [ ] `output/project/starter/rabbitmq-compose.yml` vorab getestet; RabbitMQ-Image (`rabbitmq:3.13-management`) vorab gezogen.
+- [ ] Beide Notification-Service-Starter (`output/project/starter/java/notification-service/`, `.../python/notification-service/`) lokal getestet.
+- [ ] Fallback für M4-L2 (Load Balancing): nginx-Image (`nginx:1.27`) vorab gezogen.
+- [ ] Hinweis für Teilnehmende mit nativem Docker Engine (M4-L2, nginx-Container erreicht Host über `host.docker.internal`): ggf. `--add-host` ergänzen.
+- [ ] Fallback für M6, falls RabbitMQ bei einzelnen Teilnehmenden nicht erreichbar ist: Management-UI-Screenshot einer funktionierenden Instanz als Ersatznachweis vorbereiten.
 
-- [ ] Pflichtcheckpoints sind pro Person dokumentiert.
-- [ ] Starter, Lösungen und Trainerdateien bleiben getrennt.
-- [ ] Offene technische Probleme und ausgelassene Übungen sind benannt.
-- [ ] Keine Container, temporären Zugangsdaten oder personenbezogenen Daten bleiben zurück.
-- [ ] Rückmeldungen für die nächste Materialrevision sind notiert.
+## Zeitpuffer und Kürzungsoptionen Tag 2
+
+1. M6-L3-Erweiterung "Retry-Strategie"/Dead-Letter-Skizze (optional, entfällt zuerst).
+2. M4 (Skalierung) ist rein konzeptionell/Sandbox - bei Zeitdruck lässt sich M4-L2 auf eine reine Beobachtung ohne eigenes Provozieren des Zustandsproblems (Aufgabe 4) kürzen.
+
+## Tag 3 - Setup und Fallbacks
+
+- [ ] Docker-Basis-Images vorab gezogen: `maven:3.9-eclipse-temurin-17`, `eclipse-temurin:17-jre-alpine`, `python:3.11-slim`, um Wartezeiten in M7 zu vermeiden.
+- [ ] Fallback für M7/M8 bei Build-Problemen: vorgebaute Images oder ein vollständig funktionierendes `compose.yaml` als Referenz bereithalten.
+- [ ] `output/project/monitoring-logging-concept.md` und `output/project/capstone-summary.md` sind Teilnehmerartefakte (Vorlagen in den jeweiligen `solution.md`-Dateien von M9-L2/L3) - keine vorgefertigte Version an Teilnehmende ausgeben.
+
+## Zeitpuffer und Kürzungsoptionen Tag 3
+
+1. M9-L1-Erweiterung "weiteres Resilienzmuster" (optional, entfällt zuerst).
+2. M7-L1/L2 sind knapp bemessen (15/35 Min je Spur für zwei Dockerfiles) - bei Zeitdruck das Notification-Service-Dockerfile (Aufgabe 2) als Hausaufgabe nach hinten verschieben, da das Muster identisch zum Order-Service ist.
+
+## Statische Prüfung vor Auslieferung (gesamter Kurs)
+
+- [ ] Alle 27 Labs (M1-L1 bis M9-L3) enthalten `theory.md`, `exercise.md`, `solution.md` (sprachneutrale Labs direkt im Lab-Ordner, implementierungsnahe Labs je `java/`- und `python/`-Unterordner).
+- [ ] Aufgaben und Lösungen in jedem Lab sind nummerngleich (Parität geprüft).
+- [ ] Code in Lösungen wurde statisch auf plausible Syntax, Imports und API-Nutzung geprüft; keine Ausführung vorgenommen.
+- [ ] Keine internen Informationen, Zugangsdaten oder Trainerhinweise in `output/`-Dateien.
+- [ ] Feldnamen sind über REST-Vertrag, Ereignisvertrag und beide Sprachspuren hinweg konsistent `camelCase` (siehe `04-content-review.md`, M-01).
+
+## `m00-overview` (erzeugt)
+
+- [x] Kurzer Hinweis zur Ordnerkonvention der Sprachspuren aufgenommen: sprachneutrale Labs liegen direkt im Lab-Ordner, implementierungsnahe Labs in `java/`- und `python/`-Unterordnern (siehe `04-content-review.md`, O-01, sowie `output/m00-overview/overview.md`, Abschnitt "Zwei Sprachspuren, ein Szenario").
+- [x] Gesamtagenda M1-M9 mit Tagesmeilensteinen aus `02-plan.md` übernommen (`output/m00-overview/overview.md`).
+- [x] Verweis auf `output/project/capstone-summary.md` als Abschlussartefakt ergänzt (`output/m00-overview/overview.md`, Tag-3-Abschnitt).
+- [ ] Verweis auf `output/project/capstone-summary.md` als Abschlussartefakt ergänzen.

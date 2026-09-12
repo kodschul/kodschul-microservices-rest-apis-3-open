@@ -1,93 +1,85 @@
 # FAQ
 
-## Muss ich bereits Microservices entwickelt haben?
+## Muss ich sowohl Java als auch Python können?
 
-Nein. Der Kurs beginnt mit einem vorbereiteten, laufenden Java-Service. Programmiergrundlagen und erste Erfahrung mit APIs werden vorausgesetzt; Microservice-Frameworks, RabbitMQ und Container-Orchestrierung werden nicht vorausgesetzt.
+Nein. Ihr wählt zu Kursbeginn eine Spur (Java/Spring Boot oder Python/FastAPI) und bleibt für alle drei Tage darin. Die andere Spur dient nur als Referenz, falls ihr später vergleichen möchtet.
 
-## Muss ich Python programmieren können?
+## Wie wähle ich meine Spur?
 
-Nein. Der Notification Service ist vorbereitet und wird über seinen OpenAPI-Vertrag integriert. Eigene Python-Änderungen sind eine optionale Erweiterung.
+Nach eurer praktischen Vorerfahrung: Wählt die Sprache, in der ihr bereits produktiv gearbeitet habt. Tiefe Erfahrung in beiden Sprachen wird nicht vorausgesetzt, mindestens eine praktische Vorerfahrung schon.
 
-## Warum beginnt der Kurs mit Code?
+## Was passiert, wenn (fast) alle dieselbe Spur wählen?
 
-Architekturentscheidungen werden an beobachtbarem Verhalten und realer Kopplung getroffen. Der laufende Service liefert dafür früher belastbare Evidenz als eine rein abstrakte Diskussion.
+Das ist ausdrücklich vorgesehen und funktioniert: Konzept und Ablauf sind so geplant, dass der Kurs auch mit nur einer aktiv genutzten Spur vollständig trägt.
 
-## Sind Microservices besser als ein Monolith?
+## Warum verwenden wir eine In-Memory-Speicherung statt einer echten Datenbank?
 
-Nicht grundsätzlich. Microservices können unabhängige Änderung und Skalierung erleichtern, erhöhen aber Netzwerk-, Betriebs- und Abstimmungskosten. Die passende Form hängt von Qualitätszielen und Kontext ab.
+Datenbankanbindung ist bewusst kein Lernziel dieses Kurses; sie würde Zeit von REST-, Messaging- und Container-Themen abziehen. Die daraus entstehenden Grenzen (z. B. bei mehreren Instanzen oder nach einem Neustart) werden in Modul 4 und 8 gezielt sichtbar gemacht, nicht verschwiegen.
 
-## Was bedeutet eine gute Servicegrenze?
+## Warum verwenden wir `camelCase` im JSON, obwohl Python-Code `snake_case` nutzt?
 
-Sie bündelt eine klare fachliche Verantwortung und Datenhoheit. Änderungen innerhalb der Grenze sollen möglichst wenige andere Services zwingen, sich gleichzeitig zu ändern.
+Der REST- und Ereignisvertrag ist sprachneutral und schreibt `camelCase` vor, damit Java und Python identische Nachrichten austauschen. Python hält seine internen Attributnamen `snake_case` (Konvention der Sprache) und übersetzt beim Serialisieren automatisch über eine Alias-Konfiguration.
 
-## Warum wird OpenAPI verwendet?
+## Warum sind manche Labs sprachneutral und andere in `java/`/`python/` aufgeteilt?
 
-OpenAPI macht Requests, Responses, Pflichtfelder und Fehler maschinenlesbar. Damit können Menschen und Werkzeuge prüfen, ob Anbieter und Verbraucher dieselbe Schnittstelle erwarten.
+Labs zu Architektur-, Skalierungs- und Event-Driven-Konzepten sind unabhängig von der Implementierungssprache und deshalb sprachneutral. Sobald ein Lab tatsächlichen Code enthält, liegt es einmal je Spur vor - nutzt dabei nur den Unterordner eurer gewählten Spur.
 
-## Wird ein Client vollständig generiert?
+## Muss ich die Erweiterungsaufgaben lösen?
 
-Die Generierung wird demonstriert und mit einer vorbereiteten Variante verglichen. Generierter Code spart mechanische Arbeit, benötigt aber weiterhin fachliche Prüfung, Versionierung und Tests.
+Nein. Erweiterungen sind optional und richten sich an schnellere oder erfahrenere Teilnehmende. Sie sind nie Voraussetzung für die nächste Pflichtaufgabe.
 
-## Warum verwendet der Kurs JSON statt XML?
+## Was mache ich, wenn Docker bei mir nicht funktioniert?
 
-JSON ist das primäre Datenformat des Referenzprojekts und wird von Spring Boot und FastAPI direkt unterstützt. XML wird vergleichend eingeordnet, aber nicht als zweiter Implementierungspfad aufgebaut.
+Meldet euch frühzeitig beim Trainer. Für kritische Schritte (z. B. Client-Generierung, RabbitMQ-Fallback) stehen vorbereitete Alternativen wie fertige Artefakte oder Aufzeichnungen bereit.
 
-## Wann sollte REST verwendet werden?
+## Was mache ich, wenn RabbitMQ nicht startet?
 
-REST passt zu Interaktionen, bei denen der Aufrufer eine unmittelbare Antwort benötigt und die zeitliche Kopplung akzeptabel ist.
+Prüft zunächst, ob der Compose-Befehl aus `output/project/starter/rabbitmq-compose.yml` fehlerfrei durchläuft und Port `5672`/`15672` frei sind. Gelingt das nicht, greift der vorbereitete Fallback (getestetes Compose-Stack, alternative Nachweise) des Trainers.
 
-## Wann ist Messaging sinnvoll?
+## Sind `kodschul`/`kodschul` echte Zugangsdaten, um die ich mich kümmern muss?
 
-Messaging passt, wenn Verarbeitung zeitlich entkoppelt werden darf, mehrere Verbraucher reagieren können oder ein kurzzeitig nicht erreichbarer Empfänger den Sender nicht blockieren soll.
+Nein. Das ist ein kursweiter Platzhalter für die lokale, nicht im Internet erreichbare RabbitMQ-Instanz - kein individuell erzeugtes Geheimnis. In einem produktiven Setup würdet ihr immer eigene, individuell erzeugte Zugangsdaten verwenden.
 
-## Garantiert RabbitMQ genau eine Verarbeitung?
+## Warum bauen wir Inventory nicht auch vollständig?
 
-Nein. Je nach Bestätigung und Fehlerverhalten kann eine Nachricht erneut zugestellt werden. Consumer müssen relevante Operationen deshalb idempotent gestalten oder Duplikate erkennen.
+Der Kurs fokussiert bewusst auf zwei vollständig durchimplementierte Services (Order, Notification), um Tiefe statt Breite zu erreichen. Inventory bleibt als Servicegrenze konzeptionell Teil des Szenarios (Modul 1), wird aber nicht implementiert.
 
-## Warum braucht der Kurs Docker Compose?
+## Was ist der Unterschied zwischen Unit-, Integrations-, Contract- und End-to-End-Test in diesem Kurs?
 
-Compose beschreibt Java, Python und RabbitMQ als gemeinsam startbare Landschaft. Dadurch sind Netzwerke, Ports und Konfiguration reproduzierbar, ohne eine vollständige Orchestrierungsplattform einzuführen.
+Ein Unit-Test prüft eine einzelne Funktion isoliert (z. B. Benachrichtigungstext-Erzeugung). Ein Integrationstest prüft das Zusammenspiel innerhalb eines Services (z. B. `OrderControllerTest`/`test_orders.py`). Ein Contract-Test gleicht die generierte OpenAPI-Spezifikation gegen den Vertrag ab. Ein End-to-End-Test prüft den gesamten Ablauf über mehrere Services (der manuelle Checkpoint-Nachweis in Modul 8).
 
-## Wird Kubernetes behandelt?
+## Was passiert mit meinen Bestellungen nach einem Neustart des Docker-Compose-Stacks?
 
-Nein. Kubernetes liegt außerhalb des praktischen Kursumfangs. Skalierung und Deployment werden soweit behandelt, wie es für die Bewertung der Referenzlösung erforderlich ist.
+Sie sind weg. Die In-Memory-Speicherung ist an den Lebenszyklus des jeweiligen Container-Prozesses gebunden; ein Neustart erzeugt einen komplett neuen, leeren Speicher. Das ist eine bewusste, im Kurs benannte Einschränkung, keine Fehlfunktion.
 
-## Welche Ports müssen frei sein?
+## Warum wird Cloud-Deployment nur besprochen und nicht praktisch umgesetzt?
 
-Standardmäßig werden `8080` für Java, `8000` für FastAPI, `5672` für AMQP und `15672` für die RabbitMQ-Verwaltung verwendet. Die Werte können über eine lokale `.env`-Datei angepasst werden.
+Cloud-Deployment mit echten Ressourcen erfordert Zugangsdaten, Kosten und Freigaben, die außerhalb des Kursrahmens liegen. Modul 9 behandelt Deployment-Strategien (Rolling, Blue-Green, Canary) und Cloud-Skalierungsoptionen konzeptionell und begründet, praktisch bleibt alles lokal in Docker Compose.
 
-## Was prüft ein Healthcheck?
+## Welche Deployment-Strategie setzen wir im Kurs tatsächlich um?
 
-Ein Healthcheck liefert einen automatisierbaren Zustand für Start und Diagnose. Er sollte klar unterscheiden, ob der Prozess läuft und ob notwendige Abhängigkeiten betriebsbereit sind.
+Für die lokale Docker-Compose-Umgebung reicht ein einfaches Rolling-Vorgehen. Die Wahl einer produktiven Strategie (z. B. Blue-Green für die Bestell-Plattform) ist Teil der Abschlussaufgabe in Modul 9 und wird dort begründet, nicht praktisch mit echter Infrastruktur ausgeführt.
 
-## Warum reichen Unit Tests nicht aus?
+## Wird meine Lösung benotet?
 
-Unit Tests prüfen isolierte Logik schnell. Sie erkennen jedoch keine falschen URLs, abweichenden JSON-Felder, Broker-Konfigurationen oder Probleme im vollständigen Servicefluss.
+Nein, es gibt keine Bewertung im Sinne einer Note. Jede Übung hat ein Abschlusskriterium, an dem ihr selbst überprüfen könnt, ob euer Ergebnis vollständig ist; der Trainer unterstützt bei Rückfragen.
 
-## Was ist ein Contract Test?
+## Muss ich am Ende alle sechs Lernziele im Capstone nachweisen?
 
-Ein Contract Test prüft relevante Eigenschaften der vereinbarten Schnittstelle. Im Kurs wird damit verhindert, dass OpenAPI-Dokument und laufende API unbemerkt auseinanderlaufen.
+Ja, das ist das Abschlusskriterium von Modul 9, Lab 3: Das Abschlussdokument (`capstone-summary.md`) ordnet allen sechs Lernzielen aus dem Kurskonzept einen konkreten Bezug zum eigenen Projektstand zu.
 
-## Wie wird ein Downstream-Ausfall behandelt?
+## Kann ich nach dem Kurs mit meinem Projektstand weiterarbeiten?
 
-Der Order Service übersetzt den nicht erreichbaren Notification Service in eine definierte Fehlerantwort. Später werden Timeout und begrenzte Wiederholung anhand des konkreten Risikos bewertet.
+Ja. Alle Artefakte (Code, Verträge, Compose-Datei, Checkpoint-Protokolle) liegen lokal bei euch vor und sind nicht an die Kursumgebung gebunden.
 
-## Warum sind Retries riskant?
+## Brauche ich eine bestimmte IDE?
 
-Wiederholungen erhöhen Last und können nicht-idempotente Operationen doppelt ausführen. Sie benötigen Grenzen, Backoff und eine klare Entscheidung, welche Fehler überhaupt vorübergehend sind.
+Nein, eine feste IDE ist nicht vorgeschrieben. Für die Java-Spur ist z. B. IntelliJ IDEA verbreitet, für die Python-Spur z. B. VS Code - beide sind Empfehlungen, keine Voraussetzung.
 
-## Was bedeutet Produktionsreife im Kurs?
+## Wird Kubernetes im Kurs behandelt?
 
-Produktionsreife ist ein begründetes Review, kein einzelner Schalter. Architektur, Tests, Betrieb, Security, Beobachtbarkeit, Skalierung, Delivery und Verantwortlichkeiten werden gemeinsam bewertet.
+Nein. Der Kurs orchestriert lokal mit Docker Compose. Kubernetes wird in Modul 4 nur als eine mögliche Cloud-Skalierungsoption genannt, nicht praktisch eingesetzt.
 
-## Werden Cloud-Dienste benötigt?
+## Warum dupliziert der Kurs die Ereignis-Klassen zwischen Order- und Notification-Service, statt sie einmal gemeinsam zu nutzen?
 
-Nein. Der Pflichtpfad läuft lokal. Cloud-Skalierung und Deployment-Optionen werden als Transfer- und Entscheidungsfragen eingeordnet.
-
-## Was ist der gemeinsame Mindeststand?
-
-Der Basispfad umfasst den laufenden Java-Service, einen validierten Vertrag, Java-Python-Kommunikation, einen RabbitMQ-Ereignisfluss, die Compose-Landschaft sowie einen dokumentierten Test- und Produktionsreifebefund.
-
-## Was mache ich, wenn mein Setup ausfällt?
-
-Zuerst werden Ports, Containerstatus, Logs und Konfiguration geprüft. Für den Tag-1-REST-Pfad existiert ein nativer Windows-Fallback; die Container- und Messaging-Ziele benötigen weiterhin eine funktionierende Docker-Umgebung.
+Beide Services sind bewusst unabhängige Codebasen ohne gemeinsam genutztes Sprachmodul (Dual-Track-Prinzip). Die geteilte Schemadatei (`order-created-event.schema.json`) ist die gemeinsame Quelle der Wahrheit, an der beide Implementierungen synchron gehalten werden - der Preis dafür ist eine bewusst in Kauf genommene Duplizierung der Modellklassen.

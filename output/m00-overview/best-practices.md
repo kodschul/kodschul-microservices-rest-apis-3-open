@@ -1,112 +1,74 @@
 # Best Practices
 
-Diese Leitlinien verbinden Architektur, API-Design, Integration, Tests und Betrieb über alle Kurstage.
+Diese Praktiken werden im Kurs tatsächlich verwendet und verbinden Architektur, API-Design, Messaging, Container und Betrieb über alle neun Module.
 
-## Mit dem Problem beginnen
+## Servicegrenzen vor Code entwerfen
 
-- Eine Servicegrenze braucht einen fachlichen oder betrieblichen Grund.
-- Ein zusätzlicher Prozess, Container oder Broker ist kein Nutzen an sich.
-- Qualitätsziele wie unabhängige Änderung, Verfügbarkeit oder Skalierung machen Trade-offs prüfbar.
-- Ein gut strukturierter Monolith bleibt eine gültige Option.
+- Eine Servicegrenze braucht einen fachlichen Grund (Verantwortung, Datenhoheit), nicht nur eine technische Trennung.
+- Order-, Inventory- und Notification-Verantwortung werden bewusst getrennt benannt, bevor der erste Endpunkt entsteht (Modul 1).
+- Eine Grenze, die nicht begründet werden kann, ist ein Kandidat für einen gemeinsamen Service statt für eine künstliche Aufteilung.
 
-## Verantwortung und Datenhoheit klären
+## Contract-first statt Code-first entwickeln
 
-- Jeder Service besitzt eine klar benannte Verantwortung.
-- Daten werden nicht ohne definierte Schnittstelle zwischen Services geteilt.
-- Gemeinsame Datenbanken erzeugen versteckte Laufzeit- und Änderungsabhängigkeiten.
-- Eine Context Map macht Beziehungen und Abhängigkeiten sichtbar.
+- Der REST-Vertrag (`order-api.yaml`) und der Ereignisvertrag (`order-created-event.schema.json`, `messaging-contract.md`) entstehen vor der Implementierung (Module 2, 5).
+- Beide Sprachspuren implementieren denselben Vertrag unabhängig voneinander - Abweichungen fallen beim Vertragsabgleich auf, nicht erst beim gemeinsamen Testen.
+- Ein Vertrag, der beiden Spuren vorliegt, verhindert, dass sich REST- und Messaging-Feldnamen unbemerkt auseinanderentwickeln.
 
-## HTTP-Semantik konsistent einsetzen
+## Feldnamen sprachübergreifend konsistent halten
 
-- Ressourcen werden als fachliche Substantive modelliert.
-- HTTP-Methoden beschreiben die beabsichtigte Operation.
-- Statuscodes unterscheiden Erfolg, ungültige Eingabe und Downstream-Ausfall.
-- Fehlerantworten enthalten einen stabilen maschinenlesbaren Code und eine verständliche Nachricht.
-- Grenzfälle werden vor der Implementierung benannt.
+- Alle JSON-Payloads (REST und Messaging) verwenden konsequent `camelCase`, unabhängig von der internen Attributbenennung jeder Sprache.
+- Python-Modelle nutzen `alias_generator=to_camel` und `populate_by_name=True`, damit interner `snake_case`-Code und externes `camelCase`-JSON keinen Widerspruch erzeugen.
+- Diese Konsistenz wird am Vertrag geprüft (Modul 2, 3), nicht erst beim Testen der Integration.
 
-## OpenAPI als Vertrag behandeln
+## Kleine, in sich vollständige Ereignisse veröffentlichen
 
-- Der Vertrag beschreibt erfolgreiche und fehlerhafte Antworten.
-- Pflichtfelder, Grenzen und erlaubte Werte sind explizit.
-- Änderungen am Vertrag werden gemeinsam mit Implementierung und Tests geprüft.
-- Generierter Code reduziert Tipparbeit, ersetzt aber keine fachliche Prüfung.
-- Verbraucher und Anbieter benötigen eine abgestimmte Versionsstrategie.
+- Das Bestellereignis trägt bereits alle Daten, die der Notification-Service braucht (Event-Carried State Transfer, Modul 5) - keine Rückfrage an den Order-Service nötig.
+- Nur Felder aufnehmen, die ein Konsument tatsächlich benötigt; interne Implementierungsdetails bleiben außerhalb des Ereignisses.
+- Ein eigenes Schema pro Ereignistyp (statt eines generischen "Alles-Ereignisses") hält Verträge klein und nachvollziehbar.
 
-## Sprachgrenzen über Datenverträge überbrücken
+## Wiederholungen begrenzen und mit Backoff versehen
 
-- Java und Python koppeln sich über öffentliche Schemas statt über implementierungsspezifische Klassen.
-- Feldnamen und Datentypen werden auf der Leitung geprüft.
-- Serialisierte Nachrichten werden von der empfangenden Technologie tatsächlich gelesen.
-- Framework-spezifische Details bleiben hinter der Servicegrenze.
+- Jeder Retry hat eine feste Obergrenze (`maxAttempts`/`stop_after_attempt`) statt endloser Wiederholung (Modul 9).
+- Exponentielles Backoff verhindert, dass wiederholte Versuche ein bereits gestörtes System zusätzlich belasten.
+- Retry passt zu vorübergehenden Fehlern (z. B. kurzer Verbindungsabbruch), nicht zu dauerhaften (z. B. falsche Zugangsdaten) - diese Grenze wird im Kurs bewusst benannt.
 
-## REST und Messaging bewusst auswählen
+## Health-Signale und Startreihenfolge explizit machen
 
-REST passt, wenn eine unmittelbare Antwort fachlich erforderlich ist. Messaging passt, wenn zeitliche Entkopplung und unabhängige Verarbeitung wichtiger sind.
+- Jeder Service exponiert einen Health-Endpunkt (`/health` bzw. `/actuator/health`), der unabhängig von fachlicher Logik prüfbar ist (Modul 1, 6).
+- Docker-Compose-Healthchecks und `depends_on: condition: service_healthy` sorgen dafür, dass abhängige Services erst starten, wenn RabbitMQ tatsächlich bereit ist, nicht nur, wenn der Container existiert (Modul 8).
 
-Prüfkriterien:
+## Container schlank, reproduzierbar und nicht-privilegiert bauen
 
-- Muss der Aufrufer sofort wissen, ob die Operation erfolgreich war?
-- Darf der Empfänger vorübergehend nicht erreichbar sein?
-- Wie wird Konsistenz sichtbar gemacht?
-- Wer besitzt Fehlerbehandlung und Wiederholung?
-- Wie werden Duplikate behandelt?
+- Multi-Stage-Builds trennen Build- und Laufzeitumgebung (Java, Modul 7); Python nutzt ein schlankes, fest gepinntes Basis-Image statt `latest`.
+- Abhängigkeiten werden vor dem restlichen Code kopiert und installiert, damit Docker-Layer-Caching greift.
+- Container laufen mit einem eigens angelegten, nicht-privilegierten Nutzer statt als `root`.
 
-## Wiederholungen begrenzen
+## Innerhalb eines Compose-Netzwerks über Servicenamen kommunizieren
 
-- Jeder Retry benötigt eine maximale Anzahl oder Gesamtdauer.
-- Backoff reduziert zusätzliche Last während einer Störung.
-- Nicht jede Operation darf wiederholt werden.
-- Idempotenz verhindert doppelte fachliche Wirkung.
-- Dauerhafte Fehler werden sichtbar gemacht, nicht endlos verdeckt.
+- Sobald mehrere Services gemeinsam über Docker Compose laufen, ersetzt der Servicename (`rabbitmq`, `order-service`) den bis dahin genutzten `host.docker.internal` (Modul 8).
+- `host.docker.internal` bleibt nur relevant, solange Container einzeln gestartet werden und einen auf dem Host laufenden Dienst erreichen müssen (Module 3, 4, 7) - inklusive des Hinweises, dass native Docker-Engine-Umgebungen (z. B. Linux) zusätzlich `--add-host=host.docker.internal:host-gateway` benötigen.
 
-## Tests nach Risiko wählen
+## Neue Abhängigkeiten immer in der Abhängigkeitsdatei deklarieren
 
-| Risiko | Geeigneter früher Nachweis |
-| --- | --- |
-| fehlerhafte Fachlogik | Unit Test |
-| abweichendes API-Schema | Contract Test |
-| falsche Service-Konfiguration | Integration Test |
-| defekter Gesamtfluss | End-to-End-Smoke-Test |
-| problematisches Ausfallverhalten | gezielter Fehler- und Resilienztest |
+- Neue Bibliotheken (`pika`, `tenacity`, `spring-retry`, `pytest`/`httpx`) werden über `requirements.txt` bzw. `pom.xml` eingeführt, nie nur ad-hoc installiert (Module 2, 6, 9).
+- Das hält die Umgebung für andere Teilnehmende und für den Trainer reproduzierbar.
 
-Eine große Zahl schneller Unit Tests ersetzt keinen kleinen, gezielten Test über eine echte Servicegrenze.
+## Sandbox-Übungen von der Projektbasis trennen
 
-## Container reproduzierbar halten
+- Übungen, die nur zu Beobachtungszwecken dienen (z. B. eine zweite Service-Instanz hinter einem temporären Load Balancer, Modul 4), sind ausdrücklich als reversibel gekennzeichnet.
+- Teilnehmende wissen dadurch klar, wann eine Änderung dauerhaft im eigenen Projekt bleibt und wann nicht.
 
-- Base Images und Bibliotheken verwenden konkrete Versionen.
-- Konfiguration wird über Umgebungsvariablen eingebracht.
-- Sensible Konfigurationswerte gehören nicht in Images oder öffentliche Dateien.
-- Healthchecks prüfen die für den Betrieb relevante Erreichbarkeit.
-- Service-Namen dienen innerhalb von Compose als Netzwerkadressen.
-- Start und Stopp sind skriptbar und hinterlassen keine unnötigen Ressourcen.
+## Fehlerfälle gezielt provozieren, beobachten und zurücksetzen
 
-## Diagnose mit Evidenz führen
+- Resilienz wird nicht nur behauptet, sondern durch bewusst injizierte Fehler sichtbar gemacht (z. B. RabbitMQ kurzzeitig stoppen, Modul 6/9) und danach explizit wieder zurückgesetzt.
+- Automatisierte Fehlerinjektionstests (Mocking von `RabbitTemplate`/`pika.BlockingConnection`) prüfen dasselbe Verhalten reproduzierbar, ohne echte Infrastruktur zu stören (Modul 9).
 
-- Zuerst Status und betroffene Grenze bestimmen.
-- Danach relevante Logs und Konfiguration prüfen.
-- Eine Hypothese mit einem kleinen Test falsifizieren.
-- Erst dann Konfiguration oder Code ändern.
-- Nach der Korrektur denselben Fehlerfall erneut ausführen.
+## Baseline vor Erweiterung abschließen
 
-## Produktionsreife als Entscheidung behandeln
+- Jede Übung trennt eine für alle verpflichtende Baseline von optionalen Erweiterungen (z. B. Modul 2, 6, 9).
+- Eine Erweiterung ist nie Voraussetzung für nachfolgende Pflichtinhalte - das erlaubt heterogenen Gruppen ein gemeinsames Tempo ohne Blockaden.
 
-Eine lokal laufende Lösung ist noch nicht produktionsreif. Zu prüfen sind mindestens:
+## Monitoring früh mitdenken, nicht nachträglich anhängen
 
-- Verantwortlichkeiten und Bereitschaftsdienst,
-- Security und geschützte Konfigurationsverwaltung,
-- Metriken, Logs, Traces und Alarmierung,
-- Backup-, Recovery- und Rollback-Verfahren,
-- Kapazitäts- und Skalierungsannahmen,
-- Deployment- und Freigabeprozess,
-- Kosten und organisatorische Komplexität.
-
-## Kurs-Checkliste
-
-- [ ] Jede Servicegrenze besitzt eine Begründung.
-- [ ] Erfolg, Grenze und Fehler sind im Vertrag sichtbar.
-- [ ] Java und Python tauschen vertragstreue Daten aus.
-- [ ] Die Kommunikationsform passt zur fachlichen Erwartung.
-- [ ] Tests adressieren konkrete Risiken.
-- [ ] Die Landschaft lässt sich reproduzierbar starten und stoppen.
-- [ ] Ein verteilter Fehler ist anhand von Evidenz diagnostiziert.
-- [ ] Nächste Produktionsschritte sind priorisiert und begründet.
+- Bereits im letzten Modul wird ein Monitoring-/Logging-Konzept entlang vier fester Aspekte skizziert: Health-Signale, fachliche Metriken, Fehler-Sichtbarkeit, Log-Korrelation (Modul 9).
+- Eine Korrelations-ID (hier die Bestell-ID) durch die Logs mehrerer Services zu verfolgen, ist die einfachste Form von Tracing ohne zusätzliche Infrastruktur.
